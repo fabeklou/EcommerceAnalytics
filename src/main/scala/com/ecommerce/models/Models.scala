@@ -44,3 +44,13 @@ case class Product(
                     rating: Double,
                     stock: Int
                   )
+
+// Modèle des caractéristiques temporelles enrichies à partir d'un timestamp
+case class TimeFeatures(
+                         hour: Int,
+                         day_of_week: String,
+                         month: String,
+                         is_weekend: Int,
+                         day_period: String,
+                         is_working_hours: Int
+                       )
