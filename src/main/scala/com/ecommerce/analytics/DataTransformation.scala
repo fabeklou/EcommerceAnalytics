@@ -140,4 +140,32 @@ class DataTransformation(spark: SparkSession) {
 
     finalReport
   }
+
+  def cohortsAnalysis(enrichedDf: DataFrame): DataFrame = {
+
+    // Définir une fenêtre par utilisateur pour trouver sa toute première date
+    val userWindow = Window.partitionBy("user_id")
+
+    // Ajouter la date de première transaction sur CHAQUE ligne
+    val dfWithFirstDate = enrichedDf.withColumn(
+      "first_transaction_date",
+      min("timestamp").over(userWindow)
+    )
+
+    // Convertir cette date en mois de cohorte (ex: "2024-07")
+    val dfWithCohort = dfWithFirstDate.withColumn(
+      "cohort_month",
+      date_format(to_date(col("first_transaction_date"), "yyyyMMddHHmmss"), "yyyy-MM")
+    )
+
+    // Rapport final : Agrégation par mois de cohorte
+    dfWithCohort.groupBy("cohort_month")
+      .agg(
+        countDistinct("user_id").as("num_users_in_cohort"),
+        count("transaction_id").as("total_transactions"),
+        sum("amount").as("total_revenue_generated"),
+        avg("amount").as("avg_revenue")
+      )
+      .orderBy("cohort_month")
+  }
 }
