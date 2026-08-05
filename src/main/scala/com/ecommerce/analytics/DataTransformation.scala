@@ -72,4 +72,30 @@ class DataTransformation(spark: SparkSession) {
 
     dfFinal
   }
+
+  def addRollingAnalytics(df: DataFrame): DataFrame = {
+    // Définir la fenêtre glissante de 7 jours :
+    // On transforme le String yyyyMMddHHmmss en secondes pour pouvoir faire des maths
+    val secondsIn7Days = 7 * 24 * 60 * 60
+    val timeCol = unix_timestamp(col("timestamp"), "yyyyMMddHHmmss")
+
+    val rollingWindow = Window.partitionBy("user_id")
+      .orderBy(timeCol)
+      .rangeBetween(-secondsIn7Days, 0) // Regarde 7 jours en arrière jusqu'à la ligne actuelle
+
+    // Ajouter les colonnes (montant et nombre de transactions sur 7 Jours)
+    val dfWithRolling = df
+      .withColumn(
+        "cumulated_amount_7d",
+        sum("amount").over(rollingWindow)
+      ).withColumn(
+        "nb_transactions_7d",
+        count("transaction_id").over(rollingWindow)
+      )
+
+    // Calculer et ajouter le flag final
+    dfWithRolling.withColumn("is_active_user",
+      when(col("nb_transactions_7d") >= 5, 1).otherwise(0)
+    )
+  }
 }
