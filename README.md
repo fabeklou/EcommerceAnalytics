@@ -75,10 +75,10 @@ EcommerceAnalytics/
 
 ## 📈 Fonctionnalités Implémentées
 - [x] Ingestion multi-sources (CSV, JSON, Parquet).
-- [] Validation des données (Data Quality Rules).
-- [] Enrichissement temporel (UDF avancée).
-- [] Analyse de cohortes et KPIs marchands.
-- [] Persistance des résultats en formats optimisés.
+- [x] Validation des données (Data Quality Rules).
+- [x] Enrichissement temporel (UDF avancée).
+- [x] Analyse de cohortes et KPIs marchands.
+- [x] Persistance des résultats en formats optimisés.
 
 ## Auteur
 

@@ -1,8 +1,10 @@
 package com.ecommerce.analytics
 
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 import org.apache.spark.sql.types._
 import com.ecommerce.models._
+import org.apache.spark.sql.functions._
+
 import scala.util.Try
 
 class DataIngestion(spark: SparkSession) {
@@ -23,7 +25,7 @@ class DataIngestion(spark: SparkSession) {
 
   // Méthode générique de lecture avec gestion d'erreur (Question 2.3)
   // On utilise un paramètre 'readBlock' qui contient la logique de lecture spécifique
-  private def safeRead[T](datasetName: String)(readBlock: => Dataset[T]): Dataset[T] = {
+  private def safeRead[T: Encoder](datasetName: String)(readBlock: => Dataset[T]): Dataset[T] = {
     try {
       val ds = readBlock
       // On force une action (count) pour déclencher la lecture et capturer l'erreur ici
@@ -53,6 +55,8 @@ class DataIngestion(spark: SparkSession) {
     spark
       .read
       .json(path)
+      .withColumn("age", col("age").cast("int")) // On force le type avant la conversion
+      .withColumn("annual_income", col("annual_income").cast("double")) // Sécurité supplémentaire
       .as[User]
   }
 
